@@ -575,4 +575,10 @@ const product = [
   },
 ];
 
-new Set([...product.map(p=> p.category);])
+const brands = [...new Set([...product.map((p) => p.brand)])];
+
+brands.map((c) => ({
+  value: c,
+  label: c.split("-").join(" "),
+  checked: false,
+}));
