@@ -1,6 +1,6 @@
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { increment, incrementByAmount, selectCount } from "../ProductSlice";
+import { fetchAllProductsAsync, selectAllProducts } from "../ProductSlice";
 
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -11,7 +11,11 @@ import {
   PlusIcon,
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  StarIcon,
+} from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
 
 const sortOptions = [
@@ -39,11 +43,12 @@ const filters = [
     id: "category",
     name: "Category",
     options: [
-      { value: "new-arrivals", label: "New Arrivals", checked: false },
-      { value: "sale", label: "Sale", checked: false },
-      { value: "travel", label: "Travel", checked: true },
-      { value: "organization", label: "Organization", checked: false },
-      { value: "accessories", label: "Accessories", checked: false },
+      { value: "smartphones", label: "smartphones", checked: false },
+      { value: "laptops", label: "laptops", checked: false },
+      { value: "fragrances", label: "fragrances", checked: true },
+      { value: "skincare", label: "groceries", checked: false },
+      { value: "groceries", label: "groceries", checked: false },
+      { value: "home-decoration", label: "home-decoration", checked: false },
     ],
   },
   {
@@ -65,42 +70,14 @@ function classNames(...classes) {
 }
 
 export default function ProductList() {
-  const products = [
-    {
-      id: 1,
-      name: "Basic Tee",
-      href: "#",
-      imageSrc:
-        "https://tailwindui.com/img/ecommerce-images/product-page-01-related-product-01.jpg",
-      imageAlt: "Front of men's Basic Tee in black.",
-      price: "$35",
-      color: "Black",
-    },
-    {
-      id: 2,
-      name: "Basic Tee",
-      href: "#",
-      imageSrc:
-        "https://ttbazaar.com/cdn/shop/products/GoldenYellow_2a43b735-6130-4b49-9200-6b96105d0994.jpg?v=1706510558",
-      imageAlt: "Front of men's Basic Tee in black.",
-      price: "$35",
-      color: "Black",
-    },
-    {
-      id: 3,
-      name: "Basic Tee",
-      href: "#",
-      imageSrc: "https://i.ebayimg.com/images/g/8AwAAOSwy3xinm78/s-l1200.jpg",
-      imageAlt: "Front of men's Basic Tee in black.",
-      price: "$35",
-      color: "Black",
-    },
-    // More products...
-  ];
-
-  const count = useSelector(selectCount);
   const dispatch = useDispatch();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const products = useSelector(selectAllProducts);
+
+  useEffect(() => {
+    dispatch(fetchAllProductsAsync());
+  }, [dispatch]);
+
   return (
     <div>
       <div className="bg-white">
@@ -359,32 +336,48 @@ export default function ProductList() {
                       <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                         {products.map((product) => (
                           <Link to="/product-details">
-                            <div key={product.id} className="group relative">
-                              <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
+                            <div
+                              key={product.id}
+                              className="group relative p-2"
+                            >
+                              <div className="min-h-60 aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-60">
                                 <img
-                                  src={product.imageSrc}
-                                  alt={product.imageAlt}
+                                  src={product.thumbnail}
+                                  alt={product.title}
                                   className="h-full w-full object-cover object-center lg:h-full lg:w-full"
                                 />
                               </div>
                               <div className="mt-4 flex justify-between">
                                 <div>
                                   <h3 className="text-sm text-gray-700">
-                                    <a href={product.href}>
+                                    <a href={product.thumbnail}>
                                       <span
                                         aria-hidden="true"
                                         className="absolute inset-0"
                                       />
-                                      {product.name}
+                                      {product.title}
                                     </a>
                                   </h3>
                                   <p className="mt-1 text-sm text-gray-500">
-                                    {product.color}
+                                    <StarIcon className="w-5 h-5 inline" />
+
+                                    <span className="align-bottom ml-3">
+                                      {product.rating}
+                                    </span>
                                   </p>
                                 </div>
-                                <p className="text-sm font-medium text-gray-900">
-                                  {product.price}
-                                </p>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    $
+                                    {Math.round(
+                                      product.price *
+                                        (1 - product.discountPercentage / 100)
+                                    )}
+                                  </p>
+                                  <p className="text-sm  line-through font-medium text-gray-400">
+                                    ${product.price}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </Link>
